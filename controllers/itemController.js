@@ -10,60 +10,49 @@ const getItemMluBySku = async (req, res) => {
   await page.setRequestInterception(true)
   const meliData = { skuCode: skuCode, data: [] }
 
-  page.on('request', (request) => {
-    if (
-      (!request.url().endsWith('.js') &&
-        !request.url().match(/(\badmin\b)/i) &&
-        !request.url().match(/(\blib\b)(\bjquery\b)/i) &&
-        !request.url().match(/(\blogin\b)/i)) ||
-      request.url().match(/(\bplugin\b)/i) ||
-      request.url().match(/(\bstyles.css\b)/i) ||
-      // request.url().match(/(\bdatatables\b)/i) ||
-      request.url().match(/(\bkendo\b)/i) ||
-      request.url().match(/(\bglobalize\b)/i) ||
-      request.url().match(/(\btinymce\b)/i) ||
-      request.url().match(/(\bOrder\b)/i) ||
-      request.url().match(/(\bfineuploader\b)/i) ||
-      request.url().match(/(\btageditor\b)/i) ||
-      request.url().match(/(\bcustomer\b)/i) ||
-      request.url().match(/(\bgoogle\b)/i) ||
-      request.url().match(/(\bfacebook\b)/i) ||
-      request.url().match(/(\badminLTE\b)/i) ||
-      request.url().match(/(\bFoxNetSoft.GoogleAnalytics4\b)/i) ||
-      request.url().match(/(\bFoxNetSoft.GoogleEnhancedEcommerce\b)/i) ||
-      request.url().match(/(\bPopularSearchTermsReport\b)/i) ||
-      request.url().match(/(\bjquery-validate\b)/i) ||
-      request.url().match(/(\bjquery-ui\b)/i) ||
-      request.url().match(/(\bjquery-migrate\b)/i) ||
-      request.url().match(/(\bbootstrap\b)/i) ||
-      request.url().match(/(\bchartjs\b)/i) ||
-      request.url().match(/(\bcldr\b)/i) ||
-      request.url().match(/(\b.gif\b)/i)
-    )
-      // Cooperative Intercept Mode: votes to abort at priority 0.
-      // console.log(request.url().match(/(\badmin\b)/i))
-      request.abort('failed', 2)
-  })
+  // page.on('request', (request) => {
+  //   if (
+  //     (!request.url().endsWith('.js') &&
+  //       !request.url().match(/(\badmin\b)/i) &&
+  //       !request.url().match(/(\blib\b)(\bjquery\b)/i) &&
+  //       !request.url().match(/(\blogin\b)/i)) ||
+  //     request.url().match(/(\bplugin\b)/i) ||
+  //     request.url().match(/(\bstyles.css\b)/i) ||
+  //     // request.url().match(/(\bdatatables\b)/i) ||
+  //     request.url().match(/(\bkendo\b)/i) ||
+  //     request.url().match(/(\bglobalize\b)/i) ||
+  //     request.url().match(/(\btinymce\b)/i) ||
+  //     request.url().match(/(\bOrder\b)/i) ||
+  //     request.url().match(/(\bfineuploader\b)/i) ||
+  //     request.url().match(/(\btageditor\b)/i) ||
+  //     request.url().match(/(\bcustomer\b)/i) ||
+  //     request.url().match(/(\bgoogle\b)/i) ||
+  //     request.url().match(/(\bfacebook\b)/i) ||
+  //     request.url().match(/(\badminLTE\b)/i) ||
+  //     request.url().match(/(\bFoxNetSoft.GoogleAnalytics4\b)/i) ||
+  //     request.url().match(/(\bFoxNetSoft.GoogleEnhancedEcommerce\b)/i) ||
+  //     request.url().match(/(\bPopularSearchTermsReport\b)/i) ||
+  //     request.url().match(/(\bjquery-validate\b)/i) ||
+  //     request.url().match(/(\bjquery-ui\b)/i) ||
+  //     request.url().match(/(\bjquery-migrate\b)/i) ||
+  //     request.url().match(/(\bbootstrap\b)/i) ||
+  //     request.url().match(/(\bchartjs\b)/i) ||
+  //     request.url().match(/(\bcldr\b)/i) ||
+  //     request.url().match(/(\b.gif\b)/i)
+  //   )
+  //     // Cooperative Intercept Mode: votes to abort at priority 0.
+  //     // console.log(request.url().match(/(\badmin\b)/i))
+  //     request.abort('failed', 2)
+  // })
 
   page.on('request', async (request) => {
-    // if (
-    //   request.url().endsWith('.png') ||
-    //   request.url().endsWith('.jpg') ||
-    //   request.url().endsWith('.css') ||
-    //   request.url().endsWith('.jpeg')
-    // )
-    //   request.abort('aborted', 2)
-
     if (
       request.method() === 'POST' &&
       request.url() ===
         'https://dimm.com.uy/Admin/ProductMeli/WidgetMeliProduct'
     ) {
-      // console.log('all post ' + request.url())
       const postData = request.postData()
       const url = request.url()
-
-      // console.log(request.headers())
       const fetchMeliData = await fetch(url, {
         method: 'POST',
         headers: request.headers(),
@@ -82,30 +71,25 @@ const getItemMluBySku = async (req, res) => {
         }
       })
 
-      // meliData.data = [...result.Data]
-
-      // console.log(meliData)
       res.status(StatusCodes.OK).json({
         reqSku: skuCode,
         mluCount: meliData.data.length,
         data: meliData.data,
       })
-      if (request.isInterceptResolutionHandled()) return
+
       request.continue({}, 1)
       return
-      // // console.log(superData)
-
-      // // modify the response as needed
-    } else {
-      if (request.isInterceptResolutionHandled()) return
-      request.continue({}, 1)
     }
+
+    if (request.isInterceptResolutionHandled()) return
+    request.continue({}, 0)
+    return
   })
 
-  page.on('request', (request) => {
-    // { action: InterceptResolutionAction.AlreadyHandled }, because continue in Legacy Mode was called
-    console.log(request.interceptResolutionState(), request.url())
-  })
+  // page.on('request', (request) => {
+  //   // { action: InterceptResolutionAction.AlreadyHandled }, because continue in Legacy Mode was called
+  //   console.log(request.interceptResolutionState(), request.url())
+  // })
 
   await page.goto('https://dimm.com.uy/Admin')
   await page.type('#Email', 'dimmclientes@gmail.com')
@@ -123,22 +107,11 @@ const getItemMluBySku = async (req, res) => {
   await page.type('#GoDirectlyToSku', `${skuCode}`)
   await page.click('#go-to-product-by-sku')
   await page.waitForNavigation()
-
-  const elementExists = await page.evaluate(() => {
-    // Check if an element with ID 'my-element' exists on the page
-    return Boolean(document.getElementById('product-meli'))
-  })
-
-  if (elementExists) {
-    console.log('The element exists on the page')
-  } else {
-    console.log('The element does not exist on the page')
-  }
-
+  console.log('inside item')
   await browser.close()
-
   return
 }
+
 const getItemSkuByMlu = async (req, res) => {
   const { id: mluCode } = req.params
 
@@ -204,14 +177,6 @@ const getItemSkuByMlu = async (req, res) => {
   })
 
   skuPage.on('request', async (request) => {
-    if (request.isInterceptResolutionHandled()) return
-    if (
-      request.url().endsWith('.png') ||
-      request.url().endsWith('.jpg') ||
-      request.url().endsWith('.css') ||
-      request.url().endsWith('.jpeg')
-    )
-      request.abort()
     if (
       request.method() === 'POST' &&
       request.url() === 'https://dimm.com.uy/Admin/ProductMeli/ProductList'
@@ -253,8 +218,6 @@ const getItemSkuByMlu = async (req, res) => {
           request.continue({}, 1)
           return
         }
-        if (request.isInterceptResolutionHandled()) return
-        request.continue({}, 1)
       }
     } else {
       if (request.isInterceptResolutionHandled()) return
