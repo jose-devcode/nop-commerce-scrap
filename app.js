@@ -4,11 +4,6 @@ require('express-async-errors')
 //EXPRESS
 const express = require('express')
 
-const request_client = require('request-promise-native')
-const { response } = require('http')
-const axios = require('axios')
-const ExcelJS = require('exceljs')
-
 const app = express()
 
 // DATABASE
