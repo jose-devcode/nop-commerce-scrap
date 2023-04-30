@@ -114,7 +114,6 @@ const getItemSkuByMlu = async (req, res) => {
       const newPostData = postData
         .replace(startRegex, `SearchItemId=${reqMlu}`)
         .toString()
-      let fetchData
 
       await axios
         .post(url, newPostData, {
