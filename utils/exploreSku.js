@@ -1,48 +1,15 @@
 const { StatusCodes } = require('http-status-codes')
 const puppeteer = require('puppeteer')
+const { getCookies, getBrowser, getPage } = require('../browser/browser')
 
 const exploreSku = async (skuCode) => {
-  const browser = await puppeteer.launch({ headless: true })
-  const exploreSkuPage = await browser.newPage()
-  await exploreSkuPage.setRequestInterception(true)
+  console.log(skuCode)
+  const browser = await getBrowser()
+  const page = await getPage()
   const skuData = { skuCode: skuCode, data: [] }
 
-  exploreSkuPage.on('request', (request) => {
-    if (
-      (!request.url().endsWith('.js') &&
-        !request.url().match(/(\badmin\b)/i) &&
-        !request.url().match(/(\blib\b)(\bjquery\b)/i) &&
-        !request.url().match(/(\blogin\b)/i)) ||
-      request.url().match(/(\bplugin\b)/i) ||
-      request.url().match(/(\bstyles.css\b)/i) ||
-      // request.url().match(/(\bdatatables\b)/i) ||
-      request.url().match(/(\bkendo\b)/i) ||
-      request.url().match(/(\bglobalize\b)/i) ||
-      request.url().match(/(\btinymce\b)/i) ||
-      request.url().match(/(\bOrder\b)/i) ||
-      request.url().match(/(\bfineuploader\b)/i) ||
-      request.url().match(/(\btageditor\b)/i) ||
-      request.url().match(/(\bcustomer\b)/i) ||
-      request.url().match(/(\bgoogle\b)/i) ||
-      request.url().match(/(\bfacebook\b)/i) ||
-      request.url().match(/(\badminLTE\b)/i) ||
-      request.url().match(/(\bFoxNetSoft.GoogleAnalytics4\b)/i) ||
-      request.url().match(/(\bFoxNetSoft.GoogleEnhancedEcommerce\b)/i) ||
-      request.url().match(/(\bPopularSearchTermsReport\b)/i) ||
-      request.url().match(/(\bjquery-validate\b)/i) ||
-      request.url().match(/(\bjquery-ui\b)/i) ||
-      request.url().match(/(\bjquery-migrate\b)/i) ||
-      request.url().match(/(\bbootstrap\b)/i) ||
-      request.url().match(/(\bchartjs\b)/i) ||
-      request.url().match(/(\bcldr\b)/i) ||
-      request.url().match(/(\b.gif\b)/i)
-    )
-      // Cooperative Intercept Mode: votes to abort at priority 0.
-      // console.log(request.url().match(/(\badmin\b)/i))
-      request.abort('failed', 2)
-  })
-
-  exploreSkuPage.on('request', async (request) => {
+  page.on('request', async (request) => {
+    if (request.isInterceptResolutionHandled()) return
     if (
       request.method() === 'POST' &&
       request.url() === 'https://dimm.com.uy/Admin/Product/ProductList'
@@ -96,34 +63,26 @@ const exploreSku = async (skuCode) => {
     }
   })
 
-  await exploreSkuPage.goto('https://dimm.com.uy/admin')
-  await exploreSkuPage.type('#Email', 'dimmclientes@gmail.com')
-  await exploreSkuPage.type('#Password', 'j//gb4')
-  await exploreSkuPage.click('input[type="submit"]')
-
-  await exploreSkuPage.waitForNavigation()
-  console.log('connected ok')
-
-  await exploreSkuPage.goto('https://dimm.com.uy/Admin/Product/List', {
+  await page.goto('https://dimm.com.uy/Admin/Product/List', {
     waitUntil: 'networkidle0',
   })
 
-  await exploreSkuPage.type('#SearchProductName', `${skuCode}`)
-  await exploreSkuPage.click('#search-products')
+  await page.type('#SearchProductName', `${skuCode}`)
+  await page.click('#search-products')
 
-  const elementExists = await exploreSkuPage.evaluate(() => {
-    // Check if an element with ID 'my-element' exists on the page2
-    return Boolean(document.getElementById('product-meli'))
-  })
+  // const elementExists = await exploreSkuPage.evaluate(() => {
+  //   // Check if an element with ID 'my-element' exists on the page2
+  //   return Boolean(document.getElementById('product-meli'))
+  // })
 
-  if (elementExists) {
-    console.log('The element exists on the page')
-  } else {
-    console.log('The element does not exist on the page')
-  }
+  // if (elementExists) {
+  //   console.log('The element exists on the page')
+  // } else {
+  //   console.log('The element does not exist on the page')
+  // }
 
   await browser.close()
-  console.log(skuData)
+  // console.log(skuData)
   return skuData
 }
 

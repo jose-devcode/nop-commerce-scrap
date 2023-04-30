@@ -12,9 +12,10 @@ app.get('/', async (req, res) => {
     //   }
     // })
 
-    await page.setRequestInterception(true)
+    // await page.setRequestInterception(true)
 
     page.on('request', async (request) => {
+      if (request.isInterceptResolutionHandled()) return
       if (
         request.method() === 'POST' &&
         request.url() === 'https://dimm.com.uy/Admin/Product/ProductList'
@@ -106,10 +107,12 @@ app.get('/', async (req, res) => {
         // responseBodyByRequest = await response.json()
         console.log(superData.Items.length)
         // console.log(superData)
-        request.continue()
+
+        request.continue({}, 0)
         // modify the response as needed
       } else {
-        request.continue()
+        if (request.isInterceptResolutionHandled()) return
+        request.continue({}, 0)
       }
     })
 

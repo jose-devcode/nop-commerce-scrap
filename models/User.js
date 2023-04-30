@@ -38,6 +38,14 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: '',
   },
+  targetUser: {
+    type: String,
+    default: '',
+  },
+  targetPassword: {
+    type: String,
+    default: '',
+  },
   // isVerified: {
   //   type: Boolean,
   //   default: false,
