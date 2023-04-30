@@ -17,20 +17,43 @@ const getItemMluBySku = async (req, res) => {
       const postData = request.postData()
       const url = request.url()
       const headers = request.headers()
-      const fetchMeliData = await fetch(url, {
-        method: 'POST',
-        headers: headers,
-        body: postData,
-      })
-      result = await fetchMeliData.json()
-      meliData.data = result.Data.map((item) => {
-        return {
-          mlu: item.ItemId,
-          title: item.Title,
-          url: item.Permalink,
-          catalog: item.IsCatalog,
-        }
-      })
+
+      await axios
+        .post(url, postData, {
+          headers,
+        })
+        // .post('https://dimm.com.uy/Admin/Product/ProductList', postData.data, {
+        //   headers: postData.headers,
+        // })
+        .then((response) => {
+          meliData.data = response.data.Data.map((item) => {
+            return {
+              mlu: item.ItemId,
+              title: item.Title,
+              url: item.Permalink,
+              catalog: item.IsCatalog,
+            }
+          })
+        })
+        .catch((error) => {
+          console.error(error)
+        })
+
+      // const fetchMeliData = await fetch(url, {
+      //   method: 'POST',
+      //   headers: headers,
+      //   body: postData,
+      // })
+      // result = await fetchMeliData.json()
+      // meliData.data = result.Data.map((item) => {
+      //   return {
+      //     mlu: item.ItemId,
+      //     title: item.Title,
+      //     url: item.Permalink,
+      //     catalog: item.IsCatalog,
+      //   }
+      // })
+
       res.status(StatusCodes.OK).json({
         reqSku: skuCode,
         mluCount: meliData.data.length,
