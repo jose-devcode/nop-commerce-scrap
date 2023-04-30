@@ -13,6 +13,8 @@ const connectDB = require('./db/connect')
 const itemRouter = require('./routes/itemRoutes')
 const authRouter = require('./routes/userRoutes')
 // const userRouter = require('./routes/userRoutes')
+
+app.set('trust proxy', 1)
 app.use(express.json())
 
 app.use('/api/v1/auth', authRouter)
