@@ -3,7 +3,7 @@ let browser = null
 let cookies = null
 
 async function login() {
-  browser = await puppeteer.launch({ headless: true })
+  browser = await puppeteer.launch()
   const page = await browser.newPage()
 
   // Navigate to the login page and enter credentials
