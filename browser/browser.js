@@ -6,7 +6,7 @@ let page
 let token
 const launchBrowser = async (credentials) => {
   const { targetUrl, targetUser, targetPassword } = credentials
-  browser = await puppeteer.launch()
+  browser = await puppeteer.launch({ headless: 'new' })
   page = await browser.newPage()
   await page.setRequestInterception(true)
 
