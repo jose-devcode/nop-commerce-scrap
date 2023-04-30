@@ -106,6 +106,7 @@ const getItemSkuByMlu = async (req, res) => {
       // console.log('all post ' + request.url())
       const postData = request.postData()
       const url = request.url()
+      const headers = request.headers()
       const startRegex = /SearchItemId=([^&]*)/
       const tokenRegex = /__RequestVerificationToken=([^&]*)/
       const token = postData.match(tokenRegex)
@@ -114,21 +115,36 @@ const getItemSkuByMlu = async (req, res) => {
         .replace(startRegex, `SearchItemId=${reqMlu}`)
         .toString()
       let fetchData
-      try {
-        fetchData = await fetch(url, {
-          method: 'POST',
-          headers: request.headers(),
-          body: newPostData,
-        })
-      } catch (error) {
-        console.log(error)
-        res.status(StatusCodes.OK).json({ msg: 'Error fetching data' })
-        return
-      }
 
-      itemsResult = await fetchData.json()
-      // console.log(itemsResult.Data)
-      addSkuToGlobal({ sku: itemsResult.Data[0].NopProductSku })
+      await axios
+        .post(url, newPostData, {
+          headers,
+        })
+
+        .then((response) => {
+          itemsResult = response.data
+          addSkuToGlobal({ sku: itemsResult.Data[0].NopProductSku })
+        })
+        .catch((error) => {
+          console.error(error)
+          res.status(StatusCodes.OK).json({ msg: 'Error fetching data' })
+        })
+
+      // try {
+      //   fetchData = await fetch(url, {
+      //     method: 'POST',
+      //     headers: request.headers(),
+      //     body: newPostData,
+      //   })
+      // } catch (error) {
+      //   console.log(error)
+      //   res.status(StatusCodes.OK).json({ msg: 'Error fetching data' })
+      //   return
+      // }
+
+      // itemsResult = await fetchData.json()
+      // // console.log(itemsResult.Data)
+      // addSkuToGlobal({ sku: itemsResult.Data[0].NopProductSku })
     }
 
     if (request.isInterceptResolutionHandled()) return
