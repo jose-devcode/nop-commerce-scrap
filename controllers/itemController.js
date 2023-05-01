@@ -316,7 +316,7 @@ const getItemSkuByMlu = async (req, res) => {
   await page.goto('https://dimm.com.uy/Admin/Product/List', {
     waitUntil: 'networkidle0',
   })
-  await page.type('#SearchProductName', `${itemsResult.Data[0].NopProductSku}`)
+  await page.type('#SearchProductName', `${globalResult.data[0].sku}`)
   await page.click('#search-products')
 
   await page.goto(

@@ -36,6 +36,9 @@ const launchBrowser = async (credentials) => {
         !request.url().match(/(\badmin\b)/i) &&
         !request.url().match(/(\blib\b)(\bjquery\b)/i) &&
         !request.url().match(/(\blogin\b)/i)) ||
+      request.resourceType() == 'stylesheet' ||
+      request.resourceType() == 'font' ||
+      request.resourceType() == 'image' ||
       request.url().match(/(\bplugin\b)/i) ||
       request.url().match(/(\bstyles.css\b)/i) ||
       // request.url().match(/(\bdatatables\b)/i) ||
@@ -63,19 +66,18 @@ const launchBrowser = async (credentials) => {
       // Cooperative Intercept Mode: votes to abort at priority 0.
       // console.log(request.url().match(/(\badmin\b)/i))
       request.abort('failed', 2)
-    } else {
-      if (request.isInterceptResolutionHandled()) return
-      request.continue({}, 0)
     }
-  })
-  page.on('request', (request) => {
-    if (request.isInterceptResolutionHandled()) return
-    if (request.method() === 'POST' && request.url().match(/(\blogin\b)/i)) {
-      const a = request.postData().split('&')[2]
-      fillToken(a)
 
-      request.continue({}, 3)
-    }
+    // if (
+    //   request.resourceType() == 'stylesheet' ||
+    //   request.resourceType() == 'font' ||
+    //   request.resourceType() == 'image'
+    // ) {
+    //   request.abort()
+    // }
+
+    if (request.isInterceptResolutionHandled()) return
+    request.continue({}, 0)
   })
 
   await page.goto(targetUrl)
@@ -84,8 +86,6 @@ const launchBrowser = async (credentials) => {
   await page.click('input[type="submit"]')
   await page.waitForNavigation()
   console.log('connected ok')
-  cookies = await page.cookies()
-  console.log(cookies.length)
 }
 
 module.exports = {
