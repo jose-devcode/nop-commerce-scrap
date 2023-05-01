@@ -1,16 +1,13 @@
 const User = require('../models/User')
 const jwt = require('jsonwebtoken')
 const { StatusCodes } = require('http-status-codes')
-const { UnauthenticatedError } = require('../errors')
+const CustomError = require('../errors')
 
 const authenticateUser = async (req, res, next) => {
   // check header
   const authHeader = req.headers.authorization
   if (!authHeader || !authHeader.startsWith('Bearer')) {
-    res
-      .status(StatusCodes.BAD_REQUEST)
-      .json({ msg: 'Error, Invalid credentials' })
-    return
+    throw new CustomError.UnauthenticatedError('Authentication Invalid')
   }
   const token = authHeader.split(' ')[1]
 
@@ -22,17 +19,13 @@ const authenticateUser = async (req, res, next) => {
 
     const isTokenCorrect = await user.compareToken(token)
     if (!isTokenCorrect) {
-      res.status(StatusCodes.UNAUTHORIZED).json({ msg: 'Error, expired token' })
-      return
+      throw new CustomError.UnauthenticatedError('Authentication Invalid')
     }
 
     req.user = { userId: payload.userId }
     next()
   } catch (error) {
-    res
-      .status(StatusCodes.UNAUTHORIZED)
-      .json({ msg: 'Error, Invalid credentials' })
-    return
+    throw new CustomError.CustomAPIError('Something went wrong... :(')
   }
 }
 

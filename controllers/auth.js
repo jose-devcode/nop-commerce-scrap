@@ -1,6 +1,10 @@
 const User = require('../models/User')
 const { StatusCodes } = require('http-status-codes')
-const { BadRequestError, UnauthenticatedError } = require('../errors')
+const {
+  BadRequestError,
+  UnauthenticatedError,
+  CustomAPIError,
+} = require('../errors')
 
 const register = async (req, res) => {
   const { name, email, password } = req.body
@@ -8,6 +12,14 @@ const register = async (req, res) => {
     res
       .status(StatusCodes.BAD_REQUEST)
       .json({ msg: 'Error, Please provide all values' })
+  }
+
+  const emailAlreadyExists = await User.findOne({ email })
+  if (emailAlreadyExists) {
+    res.status(StatusCodes.BAD_REQUEST).json({
+      user: 'Error, email already exist',
+    })
+    return
   }
 
   const user = await User.create({ ...req.body })
