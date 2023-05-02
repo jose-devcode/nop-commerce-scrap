@@ -19,7 +19,16 @@ const authRouter = require('./routes/userRoutes')
 // const userRouter = require('./routes/userRoutes')
 const notFoundMiddleware = require('./middlewares/not-found')
 
-app.use(helmet())
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'"],
+      },
+    },
+  })
+)
 app.use(cors())
 app.use(xss())
 app.use(mongoSanitize())
