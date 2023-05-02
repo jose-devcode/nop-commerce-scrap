@@ -1,11 +1,12 @@
 const puppeteer = require('puppeteer')
+const CustomApiError = require('../errors')
 
 let browser
 let cookies
 let page
 let token
 const launchBrowser = async (credentials) => {
-  const { targetUrl, targetUser, targetPassword } = credentials
+  const { targetUser, targetPassword } = credentials
   browser = await puppeteer.launch({ headless: 'new' })
   page = await browser.newPage()
   await page.setRequestInterception(true)
@@ -80,12 +81,16 @@ const launchBrowser = async (credentials) => {
     request.continue({}, 0)
   })
 
-  await page.goto(targetUrl)
-  await page.type('#Email', targetUser)
-  await page.type('#Password', targetPassword)
-  await page.click('input[type="submit"]')
-  await page.waitForNavigation()
-  console.log('connected ok')
+  await page.goto('http://dimm.com.uy/admin')
+  try {
+    await page.type('#Email', targetUser)
+    await page.type('#Password', targetPassword)
+    await page.click('input[type="submit"]')
+    await page.waitForNavigation()
+    console.log('connected ok')
+  } catch (error) {
+    throw new CustomApiError.CustomAPIError('Could not connect to target')
+  }
 }
 
 module.exports = {

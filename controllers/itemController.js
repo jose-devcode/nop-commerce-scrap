@@ -9,8 +9,6 @@ const getItemMluBySku = async (req, res) => {
   const { id: incomingId } = req.params
   const skuDigits = /(\d{6})/
   const matchSkuCode = incomingId.match(skuDigits)
-  const skuCode = matchSkuCode[0]
-  const meliData = { skuCode, data: [] }
 
   // console.log(typeof skuCode)
   if (!matchSkuCode) {
@@ -20,6 +18,8 @@ const getItemMluBySku = async (req, res) => {
     })
     return
   }
+  const skuCode = matchSkuCode[0]
+  const meliData = { skuCode, data: [] }
   console.log(skuCode)
 
   page.on('request', async (request) => {
@@ -111,10 +111,17 @@ const getItemSkuByMlu = async (req, res) => {
 
   const mluDigits = /(\d{9})/
   const match = mluCode.match(mluDigits)
+  if (!match) {
+    console.log('Invalid SKU provided, readed ' + mluCode)
+    res.status(StatusCodes.BAD_REQUEST).json({
+      msg: `Invalid MLU code | reading ${mluCode}`,
+    })
+    return
+  }
   const reqMlu = `MLU${match[0]}`
   console.log(reqMlu)
 
-  const globalResult = {
+  let globalResult = {
     reqMlu: reqMlu,
     combo: false,
     data: [],
@@ -139,6 +146,9 @@ const getItemSkuByMlu = async (req, res) => {
     if (!globalResult.combo) {
       globalResult.combo = true
     }
+  }
+  const setNotFound = async () => {
+    globalResult = { msg: `Not found MLU code | reading ${reqMlu}` }
   }
 
   if (!match) {
@@ -172,13 +182,18 @@ const getItemSkuByMlu = async (req, res) => {
           headers,
         })
         .then((response) => {
+          console.log(response.data)
+          if (response.data.Data.length === 0) {
+            setNotFound()
+            request.continue({}, 0)
+            return
+          }
           itemsResult = response.data
           addSkuToGlobal({ sku: itemsResult.Data[0].NopProductSku })
         })
         .catch((error) => {
           console.error(error)
           browser.close()
-          res.status(StatusCodes.OK).json({ msg: 'Error fetching data' })
         })
       request.continue({}, 0)
     }
@@ -186,6 +201,12 @@ const getItemSkuByMlu = async (req, res) => {
 
   page.on('request', async (request) => {
     if (request.isInterceptResolutionHandled()) return
+
+    if (globalResult.msg) {
+      request.continue({}, 0)
+      return
+    }
+
     if (
       request.method() === 'POST' &&
       request.url() === 'https://dimm.com.uy/Admin/Product/ProductList' &&
@@ -240,6 +261,10 @@ const getItemSkuByMlu = async (req, res) => {
 
   page.on('request', async (request) => {
     if (request.isInterceptResolutionHandled()) return
+    if (globalResult.msg) {
+      request.continue({}, 0)
+      return
+    }
     if (
       request.method() === 'POST' &&
       request
@@ -316,15 +341,17 @@ const getItemSkuByMlu = async (req, res) => {
   await page.goto('https://dimm.com.uy/Admin/Product/List', {
     waitUntil: 'networkidle0',
   })
-  await page.type('#SearchProductName', `${globalResult.data[0].sku}`)
-  await page.click('#search-products')
+  if (!globalResult === 'MLU not found') {
+    await page.type('#SearchProductName', `${globalResult.data[0].sku}`)
+    await page.click('#search-products')
 
-  await page.goto(
-    `https://dimm.com.uy/Admin/Product/Edit/${globalResult.data[0].nopId}`,
-    {
-      waitUntil: 'networkidle0',
-    }
-  )
+    await page.goto(
+      `https://dimm.com.uy/Admin/Product/Edit/${globalResult.data[0].nopId}`,
+      {
+        waitUntil: 'networkidle0',
+      }
+    )
+  }
 
   // const elementExists = await page.evaluate(() => {
   //   // Check if an element with ID 'my-element' exists on the page

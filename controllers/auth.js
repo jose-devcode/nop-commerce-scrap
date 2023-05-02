@@ -55,6 +55,10 @@ const login = async (req, res) => {
       .status(StatusCodes.UNAUTHORIZED)
       .json({ msg: 'Error, Invalid credentials' })
   }
+  const isVerified = await user.isVerified
+  if (!isVerified) {
+    res.status(StatusCodes.UNAUTHORIZED).json({ msg: 'Please verify account' })
+  }
   const token = user.createJWT()
   res.status(StatusCodes.OK).json({
     user: {
