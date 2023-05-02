@@ -5,7 +5,7 @@
 <a class=text-success data-toggle=collapse data-parent=#accordion-Authentication href=#collapse-Authentication-RegisterUser><h4 class=panel-title><span class="glyphicon glyphicon-plus"></span><strong>Register User</strong> &nbsp;|&nbsp;
 <strong class="request-method border-success">POST</strong>
 &nbsp;
-{{URL}}/auth/register</h4></a></div><div id=collapse-Authentication-RegisterUser class="panel-collapse collapse"><div class=panel-body><h5 class="label label-primary">Body</h5><span class=resp-prettyprint>{
+https://nop-commerce-scrap.onrender.com/api/v1/auth/register</h4></a></div><div id=collapse-Authentication-RegisterUser class="panel-collapse collapse"><div class=panel-body><h5 class="label label-primary">Body</h5><span class=resp-prettyprint>{
 &#34;name&#34;: &#34;newUser&#34;,
 &#34;email&#34;:newuser@gmail.com &#34;&#34;,
 &#34;password&#34;: &#34;secret&#34;
@@ -23,13 +23,13 @@
 &#34;email&#34;: &#34;newuser@gmail.com&#34;,
 &#34;token&#34;: &#34;eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NDRmMWI4NmRkZTA2Yzg3ODNjODI3ZjciLCJuYW1lIjoibmV3VXNlciIsImlhdCI6MTY4MjkwNTk5MCwiZXhwIjoxNjgyOTkyMzkwfQ._DOTWZIwTDfVsgxKHY7T2HpGYV6u5F5deTPXuHgYxu8&#34;
 }
-}</span><div class=clearfix></div><h5 class="label label-info">Code:</h5><strong>201</strong></section><section id=req_res_Authentication_RegisterUser_1_Existingemail style=display:none><h4>Example Request</h4><h5>URL: {{URL}}/auth/register</h5><h5 class="label label-primary">Body</h5><span class=resp-prettyprint>{
+}</span><div class=clearfix></div><h5 class="label label-info">Code:</h5><strong>201</strong></section><section id=req_res_Authentication_RegisterUser_1_Existingemail style=display:none><h4>Example Request</h4><h5>URL: https://nop-commerce-scrap.onrender.com/api/v1/auth/register</h5><h5 class="label label-primary">Body</h5><span class=resp-prettyprint>{
 &#34;name&#34;: &#34;newUser&#34;,
 &#34;email&#34;: &#34;newuser@gmail.com&#34;,
 &#34;password&#34;: &#34;password&#34;
 }</span><div class=clearfix></div><h4>Example Response</h4><h5 class="label label-success">Body</h5><span class=resp-prettyprint>{
 &#34;user&#34;: &#34;Error, email already exist&#34;
-}</span><div class=clearfix></div><h5 class="label label-info">Code:</h5><strong>400</strong></section><section id=req_res_Authentication_RegisterUser_2_Missingvalue style=display:none><h4>Example Request</h4><h5>URL: {{URL}}/auth/register</h5><h5 class="label label-primary">Body</h5><span class=resp-prettyprint>{
+}</span><div class=clearfix></div><h5 class="label label-info">Code:</h5><strong>400</strong></section><section id=req_res_Authentication_RegisterUser_2_Missingvalue style=display:none><h4>Example Request</h4><h5>URL: https://nop-commerce-scrap.onrender.com/api/v1/auth/register</h5><h5 class="label label-primary">Body</h5><span class=resp-prettyprint>{
 &#34;name&#34;: &#34;newUser&#34;,
 &#34;email&#34;: &#34;newuser@gmail.com&#34;,
 &#34;password&#34;: &#34;password&#34;
@@ -39,7 +39,7 @@
 <a class=text-success data-toggle=collapse data-parent=#accordion-Authentication href=#collapse-Authentication-LoginUser><h4 class=panel-title><span class="glyphicon glyphicon-plus"></span><strong>Login User</strong> &nbsp;|&nbsp;
 <strong class="request-method border-success">POST</strong>
 &nbsp;
-{{URL}}/auth/login</h4></a></div><div id=collapse-Authentication-LoginUser class="panel-collapse collapse"><div class=panel-body><h5 class="label label-primary">Body</h5><span class=resp-prettyprint>{&#34;email&#34;:&#34;newuser@gmail.com&#34;, &#34;password&#34;:&#34;password&#34;}</span><div class=clearfix></div><select class=resp-selector>
+https://nop-commerce-scrap.onrender.com/api/v1/auth/login</h4></a></div><div id=collapse-Authentication-LoginUser class="panel-collapse collapse"><div class=panel-body><h5 class="label label-primary">Body</h5><span class=resp-prettyprint>{&#34;email&#34;:&#34;newuser@gmail.com&#34;, &#34;password&#34;:&#34;password&#34;}</span><div class=clearfix></div><select class=resp-selector>
 <option value>Select Example Request/Response
 <option value=req_res_Authentication_LoginUser_0_LoginSuccess>Login Success
 <option value=req_res_Authentication_LoginUser_1_LoginFailed>Login Failed</select><br><section id=req_res_Authentication_LoginUser_0_LoginSuccess style=display:none><h4>Example Request</h4><h5>URL: https://nop-commerce-scrap.onrender.com/api/v1/auth/login</h5><h5 class="label label-primary">Body</h5><span class=resp-prettyprint>{&#34;email&#34;:&#34;newuser@mgial.com&#34;, &#34;password&#34;:&#34;password&#34;}</span><div class=clearfix></div><h4>Example Response</h4><h5 class="label label-success">Body</h5><span class=resp-prettyprint>{
@@ -54,7 +54,7 @@
 <span class=badge>2</span></h3></div><div class=panel-body><p><p>Use <code>/item</code> route + MLU or SKU number + the code you need to fetch. MLU and SKU codes will be the first group of 6 / 9 consecutive numbers within the parameter<div class=request-item><div class=panel-group id=accordion-ItemManagement><div class="panel panel-info" id=jump-ItemManagement-GetitemMLU><div class=panel-heading><small class="pull-right text-muted"></small><a class=text-info data-toggle=collapse data-parent=#accordion-ItemManagement href=#collapse-ItemManagement-GetitemMLU><h4 class=panel-title><span class="glyphicon glyphicon-plus"></span><strong>Get item MLU</strong> &nbsp;|&nbsp;
 <strong class="request-method border-info">GET</strong>
 &nbsp;
-{{URL}}/items/916562/mlu</h4></a></div><div id=collapse-ItemManagement-GetitemMLU class="panel-collapse collapse"><div class=panel-body><select class=resp-selector>
+https://nop-commerce-scrap.onrender.com/api/v1/items/916562/mlu</h4></a></div><div id=collapse-ItemManagement-GetitemMLU class="panel-collapse collapse"><div class=panel-body><select class=resp-selector>
 <option value>Select Example Request/Response
 <option value=req_res_ItemManagement_GetitemMLU_0_SuccessMLUrequest>Success MLU request
 <option value=req_res_ItemManagement_GetitemMLU_1_SKUinvalid>SKU invalid
@@ -75,18 +75,18 @@
 &#34;catalog&#34;: true
 }
 ]
-}</span><div class=clearfix></div><h5 class="label label-info">Code:</h5><strong>200</strong></section><section id=req_res_ItemManagement_GetitemMLU_1_SKUinvalid style=display:none><h4>Example Request</h4><h5>URL: {{URL}}/items/wrongsku/mlu</h5><h4>Example Response</h4><h5 class="label label-success">Body</h5><span class=resp-prettyprint>{
+}</span><div class=clearfix></div><h5 class="label label-info">Code:</h5><strong>200</strong></section><section id=req_res_ItemManagement_GetitemMLU_1_SKUinvalid style=display:none><h4>Example Request</h4><h5>URL: https://nop-commerce-scrap.onrender.com/api/v1/items/wrongsku/mlu</h5><h4>Example Response</h4><h5 class="label label-success">Body</h5><span class=resp-prettyprint>{
 &#34;msg&#34;: &#34;Invalid SKU code | reading wrongsku&#34;
-}</span><div class=clearfix></div><h5 class="label label-info">Code:</h5><strong>400</strong></section><section id=req_res_ItemManagement_GetitemMLU_2_SKUnotfound style=display:none><h4>Example Request</h4><h5>URL: {{URL}}/items/900003/mlu</h5><h4>Example Response</h4><h5 class="label label-success">Body</h5><span class=resp-prettyprint>{
+}</span><div class=clearfix></div><h5 class="label label-info">Code:</h5><strong>400</strong></section><section id=req_res_ItemManagement_GetitemMLU_2_SKUnotfound style=display:none><h4>Example Request</h4><h5>URL: https://nop-commerce-scrap.onrender.com/api/v1/items/900003/mlu</h5><h4>Example Response</h4><h5 class="label label-success">Body</h5><span class=resp-prettyprint>{
 &#34;msg&#34;: &#34;Not found SKU code | reading 900003&#34;
 }</span><div class=clearfix></div><h5 class="label label-info">Code:</h5><strong>200</strong></section></div></div></div><div class="panel panel-info" id=jump-ItemManagement-GetitemSKU><div class=panel-heading><small class="pull-right text-muted"></small><a class=text-info data-toggle=collapse data-parent=#accordion-ItemManagement href=#collapse-ItemManagement-GetitemSKU><h4 class=panel-title><span class="glyphicon glyphicon-plus"></span><strong>Get item SKU</strong> &nbsp;|&nbsp;
 <strong class="request-method border-info">GET</strong>
 &nbsp;
-{{URL}}/items/MLU467520361/sku</h4></a></div><div id=collapse-ItemManagement-GetitemSKU class="panel-collapse collapse"><div class=panel-body><select class=resp-selector>
+https://nop-commerce-scrap.onrender.com/api/v1/items/MLU467520361/sku</h4></a></div><div id=collapse-ItemManagement-GetitemSKU class="panel-collapse collapse"><div class=panel-body><select class=resp-selector>
 <option value>Select Example Request/Response
 <option value=req_res_ItemManagement_GetitemSKU_0_SuccessSKUrequest>Success SKU request
 <option value=req_res_ItemManagement_GetitemSKU_1_MLUnotFound>MLU not Found
-<option value=req_res_ItemManagement_GetitemSKU_2_MLUinvalid>MLU invalid</select><br><section id=req_res_ItemManagement_GetitemSKU_0_SuccessSKUrequest style=display:none><h4>Example Request</h4><h5>URL: https://{{URL}}/items/MLU467520361/sku</h5><h4>Example Response</h4><h5 class="label label-success">Body</h5><span class=resp-prettyprint>{
+<option value=req_res_ItemManagement_GetitemSKU_2_MLUinvalid>MLU invalid</select><br><section id=req_res_ItemManagement_GetitemSKU_0_SuccessSKUrequest style=display:none><h4>Example Request</h4><h5>URL: https://https://nop-commerce-scrap.onrender.com/api/v1/items/MLU467520361/sku</h5><h4>Example Response</h4><h5 class="label label-success">Body</h5><span class=resp-prettyprint>{
 &#34;reqMlu&#34;: &#34;MLU467520361&#34;,
 &#34;combo&#34;: false,
 &#34;data&#34;: [
@@ -129,21 +129,21 @@
 &#34;nopId&#34;: 2529
 }
 ]
-}</span><div class=clearfix></div><h5 class="label label-info">Code:</h5><strong>200</strong></section><section id=req_res_ItemManagement_GetitemSKU_1_MLUnotFound style=display:none><h4>Example Request</h4><h5>URL: {{URL}}/items/465317805h754198430/sku</h5><h4>Example Response</h4><h5 class="label label-success">Body</h5><span class=resp-prettyprint>{
+}</span><div class=clearfix></div><h5 class="label label-info">Code:</h5><strong>200</strong></section><section id=req_res_ItemManagement_GetitemSKU_1_MLUnotFound style=display:none><h4>Example Request</h4><h5>URL: https://nop-commerce-scrap.onrender.com/api/v1/items/465317805h754198430/sku</h5><h4>Example Response</h4><h5 class="label label-success">Body</h5><span class=resp-prettyprint>{
 &#34;msg&#34;: &#34;Not found MLU code | reading MLU465317805&#34;
-}</span><div class=clearfix></div><h5 class="label label-info">Code:</h5><strong>200</strong></section><section id=req_res_ItemManagement_GetitemSKU_2_MLUinvalid style=display:none><h4>Example Request</h4><h5>URL: {{URL}}/items/46531a7805h75419a8430/sku</h5><h4>Example Response</h4><h5 class="label label-success">Body</h5><span class=resp-prettyprint>{
+}</span><div class=clearfix></div><h5 class="label label-info">Code:</h5><strong>200</strong></section><section id=req_res_ItemManagement_GetitemSKU_2_MLUinvalid style=display:none><h4>Example Request</h4><h5>URL: https://nop-commerce-scrap.onrender.com/api/v1/items/46531a7805h75419a8430/sku</h5><h4>Example Response</h4><h5 class="label label-success">Body</h5><span class=resp-prettyprint>{
 &#34;msg&#34;: &#34;Invalid MLU code | reading 46531a7805h75419a8430&#34;
 }</span><div class=clearfix></div><h5 class="label label-info">Code:</h5><strong>400</strong></section></div></div></div></div></div></div></div><div class="panel panel-default"><div class=panel-heading><h3 class=panel-title id=TargetManagement>Target Management
 <span class=badge>1</span></h3></div><div class=panel-body><p><p>Use <code>/target</code> endpoint to set target login account<div class=request-item><div class=panel-group id=accordion-TargetManagement><div class="panel panel-success" id=jump-TargetManagement-SetTarget><div class=panel-heading><small class="pull-right text-muted">raw</small>
 <a class=text-success data-toggle=collapse data-parent=#accordion-TargetManagement href=#collapse-TargetManagement-SetTarget><h4 class=panel-title><span class="glyphicon glyphicon-plus"></span><strong>Set Target</strong> &nbsp;|&nbsp;
 <strong class="request-method border-success">POST</strong>
 &nbsp;
-https://{{URL}}/api/v1/auth/settarget</h4></a></div><div id=collapse-TargetManagement-SetTarget class="panel-collapse collapse"><div class=panel-body><h5 class="label label-primary">Body</h5><span class=resp-prettyprint>{
+https://https://nop-commerce-scrap.onrender.com/api/v1/api/v1/auth/settarget</h4></a></div><div id=collapse-TargetManagement-SetTarget class="panel-collapse collapse"><div class=panel-body><h5 class="label label-primary">Body</h5><span class=resp-prettyprint>{
 &#34;loginUser&#34;: &#34;newUser@gmail.com&#34;,
 &#34;password&#34;: &#34;yourPassword&#34;
 }</span><div class=clearfix></div><select class=resp-selector>
 <option value>Select Example Request/Response
-<option value=req_res_TargetManagement_SetTarget_0_Targetsuccessfullyset>Target successfully set</select><br><section id=req_res_TargetManagement_SetTarget_0_Targetsuccessfullyset style=display:none><h4>Example Request</h4><h5>URL: {{URL}}/auth/settarget</h5><h5 class="label label-primary">Body</h5><span class=resp-prettyprint>{
+<option value=req_res_TargetManagement_SetTarget_0_Targetsuccessfullyset>Target successfully set</select><br><section id=req_res_TargetManagement_SetTarget_0_Targetsuccessfullyset style=display:none><h4>Example Request</h4><h5>URL: https://nop-commerce-scrap.onrender.com/api/v1/auth/settarget</h5><h5 class="label label-primary">Body</h5><span class=resp-prettyprint>{
 &#34;loginUser&#34;: &#34;newUser@gmail.com&#34;,
 &#34;password&#34;: &#34;yourPassword&#34;
 }</span><div class=clearfix></div><h4>Example Response</h4><h5 class="label label-success">Body</h5><span class=resp-prettyprint>{
@@ -155,4 +155,4 @@ if(IsJsonString(html)){var obj=JSON.parse(html);var formattedJson=JSON.stringify
 function IsJsonString(str){try{JSON.parse(str);}catch(e){return false;}
 return true;}
 String.prototype.replaceAll=function(replaceThis,withThis){var re=new RegExp(RegExp.quote(replaceThis),"g");return this.replace(re,withThis);};RegExp.quote=function(str){return str.replace(/([.?*+^$[\]\\(){}-])/g,"\\$1");};function syntaxHighlight(json){json=json.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,function(match){var cls='number';if(/^"/.test(match)){if(/:$/.test(match)){cls='key';}else{cls='string';}}else if(/true|false/.test(match)){cls='boolean';}else if(/null/.test(match)){cls='null';}
-return '<span class="'+cls+'">'+match+'</span>';});}</script><br><br><footer class="navbar-default navbar-fixed-bottom"><div class=container-fluid><div class="span12 text-center"><span data-toggle=tooltip title="If the application help you, please feel free to give a star to the project in github. Your star inspire me to work more on open-source projects like this!">Generated at 2023-05-01 22:13:51 by <a href=https://github.com/thedevsaddam/docgen target=_blank class=text-muted>docgen</a></span></div></div></footer>
+return '<span class="'+cls+'">'+match+'</span>';});}</script><br><br><footer class="navbar-default navbar-fixed-bottom"><div class=container-fluid><div class="span12 text-center"><span data-toggle=tooltip title="If the application help you, please feel free to give a star to the project in github. Your star inspire me to work more on open-source projects like this!">Generated at 2023-05-01 22:27:32 by <a href=https://github.com/thedevsaddam/docgen target=_blank class=text-muted>docgen</a></span></div></div></footer>
