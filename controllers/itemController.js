@@ -373,114 +373,51 @@ const getItemSkuByMlu = async (req, res) => {
 /////////////////////////
 
 const getItemOveralls = async (req, res) => {
-  const { id: skuCode } = req.params
-  const browser = getBrowser()
-  const page = getPage()
-  // const token = await getToken()
-  let token
-  const cookies = await getCookies()
-  // console.log(token)
-  // console.log(cookies)
+  const browser = await getBrowser()
+  const page = await getPage()
+  const { skuCodes } = req.body
+  await page.goto('https://dimm.com.uy/Admin/Product/List')
 
-  const stringifyCookies = async (cookies) => {
-    return cookies
-      .reverse()
-      .map((cookie) => `${cookie.name}=${cookie.value}`)
-      .join('; ')
+  // console.log(skuCodes)
+  for (let i = 0; i < skuCodes.length; i++) {
+    //GO ITEM
+    await page.type('#GoDirectlyToSku', `${skuCodes[i]}`)
+
+    await Promise.all([
+      page.click('#go-to-product-by-sku'),
+      page.waitForNavigation({ waitUntil: 'networkidle0' }),
+    ])
+
+    await page.evaluate(() => {
+      const element = document.querySelector(
+        '#product-inventory > div.panel-container'
+      )
+
+      element.style.display = 'block'
+    })
+    await page.select('#ManageInventoryMethodId', '1')
+
+    const numericInput = await page.$(
+      '#pnlStockQuantity > div.col-md-9 > span.k-widget.k-numerictextbox > span > input.k-formatted-value.k-input'
+    )
+
+    await numericInput.click({ clickCount: 3 }) // Selects the current value
+    await numericInput.type('3') // Types the new value
+
+    // SET VIRTUAL
+    await page.select('#ManageInventoryMethodId', '0')
+    // SAVE
+    const saveButton = await page.$(
+      '#product-form > div.content-header.clearfix > div > button:nth-child(2)'
+    )
+
+    await Promise.all([
+      saveButton.click(),
+      page.waitForNavigation({ waitUntil: 'networkidle0' }),
+    ])
+
+    console.log(skuCodes[i] + 'OK')
   }
-
-  // console.log(stringifyCookies(cookies))
-
-  // console.log(postData)
-  const result = await page.evaluate(async (postData) => {
-    const response = await fetch('https://www.dimm.com.uy/Admin/Product/List')
-    const data = await response
-    console.log(data)
-  })
-
-  const data = `draw=1&columns%5B0%5D%5Bdata%5D=Id&columns%5B0%5D%5Bname%5D=&columns%5B0%5D%5Bsearchable%5D=false&columns%5B0%5D%5Borderable%5D=false&columns%5B0%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B0%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B1%5D%5Bdata%5D=PictureThumbnailUrl&columns%5B1%5D%5Bname%5D=&columns%5B1%5D%5Bsearchable%5D=false&columns%5B1%5D%5Borderable%5D=false&columns%5B1%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B1%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B2%5D%5Bdata%5D=Name&columns%5B2%5D%5Bname%5D=&columns%5B2%5D%5Bsearchable%5D=false&columns%5B2%5D%5Borderable%5D=false&columns%5B2%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B2%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B3%5D%5Bdata%5D=Sku&columns%5B3%5D%5Bname%5D=&columns%5B3%5D%5Bsearchable%5D=false&columns%5B3%5D%5Borderable%5D=false&columns%5B3%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B3%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B4%5D%5Bdata%5D=Price&columns%5B4%5D%5Bname%5D=&columns%5B4%5D%5Bsearchable%5D=false&columns%5B4%5D%5Borderable%5D=false&columns%5B4%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B4%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B5%5D%5Bdata%5D=StockQuantityStr&columns%5B5%5D%5Bname%5D=&columns%5B5%5D%5Bsearchable%5D=false&columns%5B5%5D%5Borderable%5D=false&columns%5B5%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B5%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B6%5D%5Bdata%5D=ProductTypeName&columns%5B6%5D%5Bname%5D=&columns%5B6%5D%5Bsearchable%5D=false&columns%5B6%5D%5Borderable%5D=false&columns%5B6%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B6%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B7%5D%5Bdata%5D=Published&columns%5B7%5D%5Bname%5D=&columns%5B7%5D%5Bsearchable%5D=false&columns%5B7%5D%5Borderable%5D=false&columns%5B7%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B7%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B8%5D%5Bdata%5D=Id&columns%5B8%5D%5Bname%5D=&columns%5B8%5D%5Bsearchable%5D=false&columns%5B8%5D%5Borderable%5D=false&columns%5B8%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B8%5D%5Bsearch%5D%5Bregex%5D=false&start=0&length=15&search%5Bvalue%5D=&search%5Bregex%5D=false&SearchProductName=&SearchCategoryId=0&SearchIncludeSubCategories=false&SearchManufacturerId=0&SearchStoreId=0&SearchWarehouseId=0&SearchVendorId=0&SearchProductTypeId=0&SearchPublishedId=0&${token}`
-
-  const headers = {
-    'sec-ch-ua': '',
-    'sec-ch-ua-mobile': '?0',
-    'user-agent':
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/112.0.5614.0 Safari/537.36',
-    'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
-    accept: 'application/json, text/javascript, */*; q=0.01',
-    referer: 'https://dimm.com.uy/Admin/Product/List',
-    'x-requested-with': 'XMLHttpRequest',
-    'sec-ch-ua-platform': '""',
-    cookie: await stringifyCookies(cookies),
-    origin: 'https://dimm.com.uy',
-  }
-  const postData = { data, headers }
-
-  // page.on('request', async (request) => {
-  //   if (request.isInterceptResolutionHandled()) return
-  //   if (
-  //     request.method() === 'POST' &&
-  //     request.url() === 'https://dimm.com.uy/Admin/Product/ProductList'
-  //   ) {
-  //     // console.log(request.headers())
-  //     // console.log(postData.headers)
-  //     // console.log(request.postData())
-  //     // console.log(postData.data)
-  //     // console.log(postData)
-  //     const data = request.postData()
-
-  //     const headers = request.headers()
-
-  //     axios
-  //       .post('https://dimm.com.uy/Admin/Product/ProductList', data, {
-  //         headers,
-  //       })
-  //       // .post('https://dimm.com.uy/Admin/Product/ProductList', postData.data, {
-  //       //   headers: postData.headers,
-  //       // })
-  //       .then((response) => {
-  //         console.log(response.data)
-  //       })
-  //       .catch((error) => {
-  //         console.error(error)
-  //       })
-
-  //     // data = await response.json()
-  //     // console.log(response)
-  //   }
-  // })
-
-  // await page.goto('https://dimm.com.uy/Admin/Product/List')
-
-  // const result = await page.evaluate(async (postData) => {
-  //   console.log(postData.data)
-  //   console.log(postData.headers)
-  //   try {
-  //     const result = await fetch(
-  //       'https://dimm.com.uy/Admin/Product/ProductList',
-  //       {
-  //         method: 'POST',
-  //         headers: postData.headers,
-  //         body: postData.data,
-  //       }
-  //     )
-  //     return result
-  //   } catch (error) {
-  //     return error
-  //   }
-  //   // axios
-  //   //   .post(
-  //   //     'https://dimm.com.uy/Admin/Product/ProductList',
-  //   //     postData.data,
-  //   //     postData.headers
-  //   //   )
-  //   //   .then((response) => {
-  //   //     // console.log(response.data)
-  //   //     return response.data
-  //   //   })
-  //   //   .catch((error) => {
-  //   //     console.error(error)
-  //   //   })
-  // }, postData)
 
   res.status(StatusCodes.OK).json({ msg: 'ok' })
 }

@@ -13,9 +13,9 @@ const {
   getItemOveralls,
 } = require('../controllers/itemController')
 
-router.route('/:id').get(authenticateUser, getItemOveralls)
+// router.route('/:id').get(authenticateUser, nopLogin, getItemOveralls)
 router.route('/:id/mlu').get(authenticateUser, nopLogin, getItemMluBySku)
 router.route('/:id/sku').get(authenticateUser, nopLogin, getItemSkuByMlu)
-router.route('/:id/overall').get(authenticateUser, nopLogin, getItemOveralls)
+router.route('/overall').get(authenticateUser, nopLogin, getItemOveralls)
 
 module.exports = router
