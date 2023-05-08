@@ -380,43 +380,110 @@ const getItemOveralls = async (req, res) => {
 
   // console.log(skuCodes)
   for (let i = 0; i < skuCodes.length; i++) {
-    //GO ITEM
-    await page.type('#GoDirectlyToSku', `${skuCodes[i]}`)
+    try {
+      await page.type('#GoDirectlyToSku', `${skuCodes[i]}`)
 
-    await Promise.all([
-      page.click('#go-to-product-by-sku'),
-      page.waitForNavigation({ waitUntil: 'networkidle0' }),
-    ])
+      await Promise.all([
+        page.click('#go-to-product-by-sku'),
+        page.waitForNavigation({ waitUntil: 'networkidle0' }),
+      ])
 
-    await page.evaluate(() => {
-      const element = document.querySelector(
-        '#product-inventory > div.panel-container'
+      await page.evaluate(() => {
+        const element = document.querySelector(
+          '#product-inventory > div.panel-container'
+        )
+
+        element.style.display = 'block'
+      })
+      await page.select('#ManageInventoryMethodId', '1')
+
+      const numericInput = await page.$(
+        '#pnlStockQuantity > div.col-md-9 > span.k-widget.k-numerictextbox > span > input.k-formatted-value.k-input'
       )
 
-      element.style.display = 'block'
-    })
-    await page.select('#ManageInventoryMethodId', '1')
+      await numericInput.click({ clickCount: 3 }) // Selects the current value
+      await numericInput.type('3') // Types the new value
 
-    const numericInput = await page.$(
-      '#pnlStockQuantity > div.col-md-9 > span.k-widget.k-numerictextbox > span > input.k-formatted-value.k-input'
-    )
+      // SET VIRTUAL
+      await page.select('#ManageInventoryMethodId', '0')
+      // SAVE
+      const saveButton = await page.$(
+        '#product-form > div.content-header.clearfix > div > button:nth-child(2)'
+      )
 
-    await numericInput.click({ clickCount: 3 }) // Selects the current value
-    await numericInput.type('3') // Types the new value
+      await Promise.all([
+        saveButton.click(),
+        page.waitForNavigation({ waitUntil: 'networkidle0' }),
+      ])
 
-    // SET VIRTUAL
-    await page.select('#ManageInventoryMethodId', '0')
-    // SAVE
-    const saveButton = await page.$(
-      '#product-form > div.content-header.clearfix > div > button:nth-child(2)'
-    )
+      console.log(skuCodes[i] + ' OK')
+    } catch (error) {
+      // Handle the error
+      continue // Skip to the next iteration of the loop
+    }
+    //GO ITEM
+  }
 
-    await Promise.all([
-      saveButton.click(),
-      page.waitForNavigation({ waitUntil: 'networkidle0' }),
-    ])
+  res.status(StatusCodes.OK).json({ msg: 'ok' })
+}
 
-    console.log(skuCodes[i] + 'OK')
+const getItemOverallsInverse = async (req, res) => {
+  const browser = await getBrowser()
+  const page = await getPage()
+  const { skuCodes } = req.body
+  await page.goto('https://dimm.com.uy/Admin/Product/List')
+
+  // console.log(skuCodes)
+  for (let i = 0; i < skuCodes.length; i++) {
+    try {
+      await page.type('#GoDirectlyToSku', `${skuCodes[i]}`)
+
+      await Promise.all([
+        page.click('#go-to-product-by-sku'),
+        page.waitForNavigation({ waitUntil: 'networkidle0' }),
+      ])
+
+      await page.evaluate(() => {
+        const element = document.querySelector(
+          '#product-inventory > div.panel-container'
+        )
+
+        element.style.display = 'block'
+      })
+      await page.select('#ManageInventoryMethodId', '1')
+
+      const numericInput = await page.$(
+        '#pnlStockQuantity > div.col-md-9 > span.k-widget.k-numerictextbox > span > input.k-formatted-value.k-input'
+      )
+
+      await numericInput.click({ clickCount: 3 })
+      await page.keyboard.press('Home')
+      await page.keyboard.down('Shift')
+      await page.keyboard.press('End')
+
+      // Release the Shift key
+      await page.keyboard.up('Shift')
+      await numericInput.type('1') // Types the new value
+
+      // SET VIRTUAL
+      // await page.select('#ManageInventoryMethodId', '0')
+      // SAVE
+      const saveButton = await page.$(
+        '#product-form > div.content-header.clearfix > div > button:nth-child(2)'
+      )
+
+      await Promise.all([
+        saveButton.click(),
+        page.waitForNavigation({ waitUntil: 'networkidle0' }),
+      ])
+
+      console.log(skuCodes[i] + ' OK')
+    } catch (error) {
+      console.log(error)
+      // Handle the error
+      continue // Skip to the next iteration of the loop
+    }
+    //GO ITEM
   }
 
   res.status(StatusCodes.OK).json({ msg: 'ok' })
@@ -426,4 +493,5 @@ module.exports = {
   getItemMluBySku,
   getItemSkuByMlu,
   getItemOveralls,
+  getItemOverallsInverse,
 }
