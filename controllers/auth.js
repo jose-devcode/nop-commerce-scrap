@@ -164,9 +164,9 @@ const { log } = require('console')
 const login = async (req, res) => {
   const { email, password, recaptchaToken } = req.body
 
-  // if (!recaptchaToken) {
-  //   throw new CustomError.BadRequestError('Please provide CAPTCHA')
-  // }
+  if (!recaptchaToken) {
+    throw new CustomError.BadRequestError('Please provide CAPTCHA')
+  }
 
   const secretKey = process.env.RECAP_SEC_KEY
   const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${recaptchaToken}`
@@ -175,53 +175,55 @@ const login = async (req, res) => {
     const response = await axios.post(verificationUrl)
     const { success } = response.data
 
-    // if (success) {
-    if (!email || !password) {
-      throw new CustomError.BadRequestError('Please provide email and password')
-    }
+    if (success) {
+      if (!email || !password) {
+        throw new CustomError.BadRequestError(
+          'Please provide email and password'
+        )
+      }
 
-    const user = await User.findOne({ email })
-    if (!user) {
-      throw new CustomError.UnauthenticatedError('Invalid Credentials')
-    }
-
-    const isPasswordCorrect = await user.comparePassword(password)
-    if (!isPasswordCorrect) {
-      throw new CustomError.UnauthenticatedError('Invalid Credentials')
-    }
-    // reCAPTCHA verification succeeded
-    // Proceed with username and password verification
-    // ...
-    const tokenUser = createTokenUser(user)
-
-    //create refresh token
-    let refreshToken = ''
-    //check for existing token
-    const existingToken = await Token.findOne({ user: user._id })
-
-    if (existingToken) {
-      const { isValid } = existingToken
-      if (!isValid) {
+      const user = await User.findOne({ email })
+      if (!user) {
         throw new CustomError.UnauthenticatedError('Invalid Credentials')
       }
-      refreshToken = existingToken.refreshToken
-      attachCookiesToResponse({ res, user: tokenUser, refreshToken })
+
+      const isPasswordCorrect = await user.comparePassword(password)
+      if (!isPasswordCorrect) {
+        throw new CustomError.UnauthenticatedError('Invalid Credentials')
+      }
+      // reCAPTCHA verification succeeded
+      // Proceed with username and password verification
+      // ...
+      const tokenUser = createTokenUser(user)
+
+      //create refresh token
+      let refreshToken = ''
+      //check for existing token
+      const existingToken = await Token.findOne({ user: user._id })
+
+      if (existingToken) {
+        const { isValid } = existingToken
+        if (!isValid) {
+          throw new CustomError.UnauthenticatedError('Invalid Credentials')
+        }
+        refreshToken = existingToken.refreshToken
+        attachCookiesToResponse({ res, user: tokenUser, refreshToken })
+        res.status(StatusCodes.OK).json({ user: tokenUser })
+        return
+      }
+
+      refreshToken = crypto.randomBytes(40).toString('hex')
+      const userAgent = req.headers['user-agent']
+      const ip = req.ip
+      const userToken = { refreshToken, ip, userAgent, user: user._id }
+      await Token.create(userToken)
+
+      attachCookiesToResponse({ res, user: tokenUser, userToken })
       res.status(StatusCodes.OK).json({ user: tokenUser })
-      return
+    } else {
+      // reCAPTCHA verification failed
+      throw new CustomError.BadRequestError('Error: CAPTCHA failure')
     }
-
-    refreshToken = crypto.randomBytes(40).toString('hex')
-    const userAgent = req.headers['user-agent']
-    const ip = req.ip
-    const userToken = { refreshToken, ip, userAgent, user: user._id }
-    await Token.create(userToken)
-
-    attachCookiesToResponse({ res, user: tokenUser, userToken })
-    res.status(StatusCodes.OK).json({ user: tokenUser })
-    // } else {
-    //   // reCAPTCHA verification failed
-    //   throw new CustomError.BadRequestError('Error: CAPTCHA failure')
-    // }
   } catch (error) {
     throw new CustomError.BadRequestError('Error: CAPTCHA failure')
     // Handle error
