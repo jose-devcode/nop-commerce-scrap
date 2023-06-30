@@ -14,7 +14,8 @@ const apiLimiter = rateLimiter({
 
 const { showCurrentUser } = require('../controllers/userController')
 const { setTarget } = require('../controllers/targetController')
-const { login, logout } = require('../controllers/auth')
+const { login, logout, register } = require('../controllers/auth')
+
 // router.post('/register', apiLimiter, register)
 router.post('/login', login)
 router.delete('/logout', authenticateUser, logout)
