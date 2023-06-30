@@ -1,6 +1,6 @@
 const { StatusCodes } = require('http-status-codes')
 const axios = require('axios')
-const { getBrowser, getPage } = require('../browser/browser')
+const { getBrowser, getPage } = require('../browser/browserS')
 
 const getItemMluBySku = async (req, res) => {
   const browser = await getBrowser()
@@ -430,18 +430,34 @@ const getItemOveralls = async (req, res) => {
 const getItemOverallsInverse = async (req, res) => {
   const browser = await getBrowser()
   const page = await getPage()
-  const { skuCodes } = req.body
+  const { skuCodes, listName } = req.body
   await page.goto('https://dimm.com.uy/Admin/Product/List')
+
+  console.log(`Recibidos ${skuCodes.length} codigos en la lista ${listName}.`)
 
   // console.log(skuCodes)
   for (let i = 0; i < skuCodes.length; i++) {
     try {
-      await page.type('#GoDirectlyToSku', `${skuCodes[i]}`)
+      const skuInput = await page.$('#GoDirectlyToSku')
+      await skuInput.click({ clickCount: 3 })
+      await page.keyboard.press('Home')
+      await page.keyboard.down('Shift')
+      await page.keyboard.press('End')
+
+      // Release the Shift key
+      await page.keyboard.up('Shift')
+      await skuInput.type(`${skuCodes[i]}`)
 
       await Promise.all([
         page.click('#go-to-product-by-sku'),
         page.waitForNavigation({ waitUntil: 'networkidle0' }),
       ])
+
+      const url = await page.url()
+      if (url === 'https://dimm.com.uy/Admin/Product/List') {
+        console.log(`wrong sku ${skuCodes[i]}`)
+        continue
+      }
 
       await page.evaluate(() => {
         const element = document.querySelector(
@@ -477,16 +493,452 @@ const getItemOverallsInverse = async (req, res) => {
         page.waitForNavigation({ waitUntil: 'networkidle0' }),
       ])
 
-      console.log(skuCodes[i] + ' OK')
+      // console.log(skuCodes[i] + ' OK ==> [ '+ listName + ' ] ==> ' + (i+1)+' / '+skuCodes.length)
+      console.log(
+        `[${listName}] [${i + 1}/ ${skuCodes.length}] ==> ${skuCodes[i]}[OK]`
+      )
     } catch (error) {
-      console.log(error)
+      console.log(`[${listName}]${skuCodes[i]}[Error]${error}`)
+      break
+
       // Handle the error
-      continue // Skip to the next iteration of the loop
     }
     //GO ITEM
   }
 
   res.status(StatusCodes.OK).json({ msg: 'ok' })
+}
+const setMasiveCategory = async (req, res) => {
+  const browser = await getBrowser()
+  const page = await getPage()
+
+  await page.setDefaultTimeout(120000000)
+
+  let idIndex = []
+  let superData = {
+    totalItems: 0,
+    totalChunks: 0,
+    Items: [],
+  }
+
+  const dimmReqListener = async (request) => {
+    if (request.isInterceptResolutionHandled()) return
+    if (
+      request.method() === 'POST' &&
+      request.url() === 'https://dimm.com.uy/Admin/Product/ProductList'
+    ) {
+      let newPostData
+      const postData = request.postData()
+      const newHeaders = request.headers()
+      const url = request.url()
+      const startRegex = /start=([^&]*)/
+      const lengthRegex = /length=([^&]*)/
+      const limit = 500
+
+      const fetchMaxItem = await fetch(url, {
+        method: 'POST',
+        headers: request.headers(),
+        body: postData,
+      })
+      const maxItem = await fetchMaxItem.json()
+
+      // superData.totalItems = 50
+      // superData.totalChunks = Math.ceil(50 / 100)
+      superData.totalItems = maxItem.recordsTotal
+      superData.totalChunks = Math.ceil(maxItem.recordsTotal / limit)
+
+      for (let i = 1; i <= superData.totalChunks; i++) {
+        // if (i === 1) {
+        //   console.log(`Chunk No. ${i} from 1 to ${i * limit}`)
+        // }
+        {
+          const skip = (i - 1) * limit
+          console.log(
+            `Chunk No. ${i}/${superData.totalChunks} | Items from ${
+              i === 1 ? '1' : skip + 1
+            } to ${i === 1 ? limit : skip + limit} | ${
+              Math.floor(100 / superData.totalChunks) * i
+            }% completed`
+          )
+
+          newPostData = postData
+            .replace(startRegex, `start=${skip}`)
+            .replace(lengthRegex, `length=${limit}`)
+            .toString()
+
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: newHeaders,
+            body: newPostData,
+          })
+
+          let chunk = await response.json()
+          chunk.Data.map((item) => {
+            idIndex.push({ sku: item.Sku, id: item.Id })
+
+            // console.log({ sku: item.Sku, id: item.Id })
+          })
+          superData.Items = [...superData.Items, ...chunk.Data]
+
+          chunk = ''
+        }
+      }
+    }
+  }
+
+  const mappingIdListener = async (request) => {
+    if (request.isInterceptResolutionHandled()) return
+    if (
+      request.method() === 'POST' &&
+      // request
+      //         .url()
+      //         .includes(
+      //           `https://dimm.com.uy/Admin/Product/ProductAttributeCombinationList?ProductId=`
+      //         )
+
+      request
+        .url()
+        .includes(
+          `https://dimm.com.uy/Admin/Product/ProductAttributeMappingList?ProductId=`
+        )
+    ) {
+      // function changeLastNumber(url, id) {
+      //   var regex = /(=)(\d+)(?=[^=]*$)/
+      //   var match = url.match(regex)
+
+      //   if (match) {
+      //     var currentValue = match[2]
+      //     var newValue = parseInt(currentValue) + 1
+      //     var newUrl = url.replace(regex, `=${id}`)
+      //     return changeLastNumber(newUrl)
+      //   }
+
+      //   return url
+      // }
+
+      function changeLastNumber(url, newNumber) {
+        var regex = /(=)(\d+)(?=[^=]*$)/
+        return url.replace(regex, '$1' + newNumber)
+      }
+
+      console.log('mapping id fetch triggered')
+      let newPostData
+      const postData = request.postData()
+      const newHeaders = request.headers()
+      const url = request.url()
+
+      // const fetchMaxItem = await fetch(url, {
+      //   method: 'POST',
+      //   headers: request.headers(),
+      //   body: postData,
+      // })
+      // superData.mappingId = await fetchMaxItem.json()
+
+      for (let i = 0; i < superData.Items.length; i++) {
+        const newUrl = changeLastNumber(url, superData.Items[i].Id)
+        // console.log(url, newUrl)
+        const fetchMaxItem = await fetch(newUrl, {
+          method: 'POST',
+          headers: request.headers(),
+          body: postData,
+        })
+
+        const attrs = await fetchMaxItem.json()
+        // console.log('found ', fetchMaxItem, ' on ', superData.Items[i].Sku)
+        superData.Items[i].attrIds = attrs.Data.map((item) => {
+          return { name: item.ProductAttribute, id: item.Id }
+        })
+      }
+
+      // superData.totalItems = 50
+      // superData.totalChunks = Math.ceil(50 / 100)
+      // superData.totalItems = maxItem.recordsTotal
+      // superData.totalChunks = Math.ceil(maxItem.recordsTotal / limit)
+
+      //   for (let i = 1; i <= superData.totalChunks; i++) {
+      //     // if (i === 1) {
+      //     //   console.log(`Chunk No. ${i} from 1 to ${i * limit}`)
+      //     // }
+      //     {
+      //       const skip = (i - 1) * limit
+      //       console.log(
+      //         `Chunk No. ${i}/${superData.totalChunks} | Items from ${
+      //           i === 1 ? '1' : skip + 1
+      //         } to ${i === 1 ? limit : skip + limit} | ${
+      //           Math.floor(100 / superData.totalChunks) * i
+      //         }% completed`
+      //       )
+
+      //       newPostData = postData
+      //         .replace(startRegex, `start=${skip}`)
+      //         .replace(lengthRegex, `length=${limit}`)
+      //         .toString()
+
+      //       const response = await fetch(url, {
+      //         method: 'POST',
+      //         headers: newHeaders,
+      //         body: newPostData,
+      //       })
+
+      //       let chunk = await response.json()
+      //       superData.Items = [...superData.Items, ...chunk.Data]
+
+      //       chunk = ''
+      //     }
+      //   }
+    }
+  }
+  const asociatedSkuListener = async (request) => {
+    if (request.isInterceptResolutionHandled()) return
+    if (
+      request.method() === 'POST' &&
+      request
+        .url()
+        .includes(
+          `https://dimm.com.uy/Admin/Product/ProductAttributeValueList?ProductAttributeMappingId=`
+        )
+    ) {
+      // function changeLastNumber(url, id) {
+      //   var regex = /(=)(\d+)(?=[^=]*$)/
+      //   var match = url.match(regex)
+
+      //   if (match) {
+      //     var currentValue = match[2]
+      //     var newValue = parseInt(currentValue) + 1
+      //     var newUrl = url.replace(regex, `=${id}`)
+      //     return changeLastNumber(newUrl)
+      //   }
+
+      //   return url
+      // }
+
+      function changeLastNumber(url, newNumber) {
+        var regex = /(=)(\d+)(?=[^=]*$)/
+        return url.replace(regex, '$1' + newNumber)
+      }
+
+      console.log('maping asociated triggered')
+      let newPostData
+      const postData = request.postData()
+      const newHeaders = request.headers()
+      const url = request.url()
+
+      // const fetchMaxItem = await fetch(url, {
+      //   method: 'POST',
+      //   headers: request.headers(),
+      //   body: postData,
+      // })
+      // superData.mappingId = await fetchMaxItem.json()
+
+      for (let i = 0; i < superData.Items.length; i++) {
+        superData.Items[i].asociatedProducts = []
+        for (let y = 0; y < superData.Items[i].attrIds.length; y++) {
+          const newUrl = changeLastNumber(url, superData.Items[i].attrIds[y].id)
+          // console.log(url, newUrl)
+          const fetchMaxItem = await fetch(newUrl, {
+            method: 'POST',
+            headers: request.headers(),
+            body: postData,
+          })
+
+          const asoc = await fetchMaxItem.json()
+          // console.log('found ', fetchMaxItem, ' on ', superData.Items[i].Sku)
+          superData.Items[i].asociatedProducts.push(
+            ...asoc.Data.map((item) => {
+              // console.log({
+              //   name: item.AssociatedProductName,
+              //   id: item.AssociatedProductId,
+              // })
+              const { AssociatedProductName: name, AssociatedProductId: id } =
+                item
+              return {
+                name,
+                id,
+                sku: idIndex
+                  .filter((item) => id === item.id && id !== 0)
+                  .map((item) => item.sku),
+              }
+            })
+          )
+        }
+      }
+
+      // superData.totalItems = 50
+      // superData.totalChunks = Math.ceil(50 / 100)
+      // superData.totalItems = maxItem.recordsTotal
+      // superData.totalChunks = Math.ceil(maxItem.recordsTotal / limit)
+
+      //   for (let i = 1; i <= superData.totalChunks; i++) {
+      //     // if (i === 1) {
+      //     //   console.log(`Chunk No. ${i} from 1 to ${i * limit}`)
+      //     // }
+      //     {
+      //       const skip = (i - 1) * limit
+      //       console.log(
+      //         `Chunk No. ${i}/${superData.totalChunks} | Items from ${
+      //           i === 1 ? '1' : skip + 1
+      //         } to ${i === 1 ? limit : skip + limit} | ${
+      //           Math.floor(100 / superData.totalChunks) * i
+      //         }% completed`
+      //       )
+
+      //       newPostData = postData
+      //         .replace(startRegex, `start=${skip}`)
+      //         .replace(lengthRegex, `length=${limit}`)
+      //         .toString()
+
+      //       const response = await fetch(url, {
+      //         method: 'POST',
+      //         headers: newHeaders,
+      //         body: newPostData,
+      //       })
+
+      //       let chunk = await response.json()
+      //       superData.Items = [...superData.Items, ...chunk.Data]
+
+      //       chunk = ''
+      //     }
+      //   }
+    }
+  }
+
+  page.on('request', dimmReqListener)
+
+  await page.goto('https://dimm.com.uy/Admin/Product/List', {
+    waitUntil: 'networkidle0',
+  })
+
+  await page.off('request', dimmReqListener)
+
+  page.on('request', mappingIdListener)
+  await page.goto(
+    // `https://dimm.com.uy/Admin/Product/Edit/5552`,
+    `https://dimm.com.uy/Admin/Product/Edit/${superData.Items[0].Id}`,
+    {
+      waitUntil: 'networkidle0',
+    }
+  )
+
+  await page.off('request', mappingIdListener)
+
+  function findFirstNonEmptyId(data) {
+    if (Array.isArray(data)) {
+      for (var i = 0; i < data.length; i++) {
+        var result = findFirstNonEmptyId(data[i])
+        if (result) {
+          return result
+        }
+      }
+    } else if (typeof data === 'object' && data !== null) {
+      if (
+        data.hasOwnProperty('attrIds') &&
+        Array.isArray(data.attrIds) &&
+        data.attrIds.length > 0
+      ) {
+        var attrIds = data.attrIds
+        for (var j = 0; j < attrIds.length; j++) {
+          var attrId = attrIds[j]
+          if (
+            typeof attrId === 'object' &&
+            attrId.hasOwnProperty('id') &&
+            attrId.id !== ''
+          ) {
+            return attrId.id
+          }
+        }
+      } else {
+        for (var key in data) {
+          var result = findFirstNonEmptyId(data[key])
+          if (result) {
+            return result
+          }
+        }
+      }
+    }
+
+    return null
+  }
+
+  const firstNonEmptyId = findFirstNonEmptyId(superData.Items)
+
+  page.on('request', asociatedSkuListener)
+  await page.goto(
+    // `https://dimm.com.uy/Admin/Product/Edit/5552`,
+    `https://dimm.com.uy/Admin/Product/ProductAttributeMappingEdit/${firstNonEmptyId}`,
+    {
+      waitUntil: 'networkidle0',
+    }
+  )
+
+  await page.off('request', asociatedSkuListener)
+
+  await browser.close()
+  console.log('Filtering Data...')
+  const filteredData = superData.Items.map((item) => {
+    const {
+      Id,
+      Name,
+      Sku,
+      Gtin,
+      Price,
+      ProductCost,
+      Published,
+      StockQuantity,
+      ManageInventoryMethodId,
+      VisibleIndividually,
+      SeName,
+      attrIds,
+      asociatedProducts,
+    } = item
+
+    let invMode = ''
+    switch (ManageInventoryMethodId) {
+      case 0:
+        invMode = 'Virtual'
+        break
+      case 1:
+        invMode = 'SKU'
+        break
+      case 2:
+        invMode = 'Atributo'
+        break
+    }
+
+    const visibleInd = VisibleIndividually === true ? 'Si' : 'No'
+    const publicado = Published === true ? 'Si' : 'No'
+
+    // const skuCode = Sku.toString()
+
+    const newItem = {
+      Titulo: Name,
+      Id,
+      Sku,
+      Gtin,
+      USD: Price,
+      UYU: ProductCost,
+      Publicado: publicado,
+      Visible: visibleInd,
+      Stock: StockQuantity,
+      From: invMode,
+      Url: SeName,
+      attrIds,
+      asociatedProducts,
+    }
+    return newItem
+  })
+  // .filter((item) => {
+  //   // console.log(item.Sku)
+  //   // console.log(item.SeName)
+  //   const regex = /^[A-Za-z].*/
+  //   const match = item.Sku.match(regex)
+  //   if (match) {
+  //     return item
+  //   }
+  // })
+
+  res
+    .status(StatusCodes.OK)
+    .json({ msg: filteredData.length, mappingId: filteredData })
 }
 
 module.exports = {
@@ -494,4 +946,5 @@ module.exports = {
   getItemSkuByMlu,
   getItemOveralls,
   getItemOverallsInverse,
+  setMasiveCategory,
 }
